@@ -1,8 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Temporary player shot. It can later be replaced by a projectile prefab with
-/// enemy hit logic and visual effects.
+/// Configurable projectile that damages opposing factions and then disappears.
 /// </summary>
 public sealed class PrototypeProjectile : MonoBehaviour
 {
@@ -10,6 +9,9 @@ public sealed class PrototypeProjectile : MonoBehaviour
     private GameObject owner;
 
     [SerializeField] private float lifetime = 2.5f;
+    [Min(1)]
+    [SerializeField] private int damage = 1;
+    [SerializeField] private PrototypeFaction faction = PrototypeFaction.Player;
 
     public static Sprite GetSquareSprite()
     {
@@ -41,6 +43,12 @@ public sealed class PrototypeProjectile : MonoBehaviour
         if (other.gameObject == owner)
         {
             return;
+        }
+
+        PrototypeHealth target = other.GetComponentInParent<PrototypeHealth>();
+        if (target != null && target.Faction != faction)
+        {
+            target.TakeDamage(damage, owner != null ? owner : gameObject);
         }
 
         Destroy(gameObject);

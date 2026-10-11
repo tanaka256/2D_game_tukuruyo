@@ -15,3 +15,14 @@ Unity 2D platform action game prototype.
 - Shoot: `J`, `X`, or right `Ctrl`
 
 The current prototype generates temporary player and platform objects at runtime.
+
+## Prefabs
+
+Open the Unity project and run `Prototype > Generate Prototype Prefabs` to create the
+editable prototype assets under `Assets/Prefabs` and `Assets/Materials`. This tool does
+not modify `Assets/Scenes/SampleScene.unity`.
+
+The generated `Player`, `Platform`, and `Projectile` prefabs can be dragged directly
+from the Project window into an authored scene. `Player` contains its controller,
+camera-follow component, and `ProjectileSpawnPoint`; it uses the `Projectile` prefab
+when shooting.

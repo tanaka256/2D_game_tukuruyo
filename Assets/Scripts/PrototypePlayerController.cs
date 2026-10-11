@@ -26,10 +26,23 @@ public sealed class PrototypePlayerController : MonoBehaviour
     [SerializeField] private Vector2 projectileSpawnOffset = new(0.58f, 0.08f);
     [SerializeField] private float projectileSpeed = 13f;
     [SerializeField] private float shotCooldown = 0.2f;
+    [SerializeField] private GameObject projectilePrefab;
+
+    [Header("Crouch")]
+    [SerializeField] private Sprite crouchingSprite;
+    [SerializeField] private Color crouchingFallbackColor = new(1f, 0.55f, 0.1f, 1f);
+    [SerializeField] private Vector2 crouchingColliderSize = new(1f, 0.5f);
+    [SerializeField] private Vector2 crouchingColliderOffset = new(0f, -0.25f);
+    [SerializeField] private Vector2 crouchingProjectileSpawnOffset = new(0.58f, -0.25f);
+
+    [Header("Ladder")]
+    [SerializeField] private float ladderClimbSpeed = 3.5f;
 
     private Rigidbody2D body;
     private BoxCollider2D bodyCollider;
     private SpriteRenderer spriteRenderer;
+    private Sprite standingSprite;
+    private Color standingColor = Color.white;
     [SerializeField] private Transform projectileSpawnPoint;
     private readonly HashSet<Collider2D> groundContacts = new();
     private int jumpsRemaining;
@@ -38,16 +51,34 @@ public sealed class PrototypePlayerController : MonoBehaviour
     private bool jumpInProgress;
     private int facingDirection = 1;
     private float nextShotTime;
+    private Vector2 standingColliderSize;
+    private Vector2 standingColliderOffset;
+    private Vector3 standingProjectileSpawnPosition;
+    private float standingGravityScale;
+    private bool crouching;
+    private bool onLadder;
+    private PrototypeLadder activeLadder;
+    private PrototypeMovingPlatform movingPlatform;
 
     public int MaxJumps => maxJumps;
     public int JumpsRemaining => unlimitedJumpUnlocked ? -1 : jumpsRemaining;
     public bool UnlimitedJumpUnlocked => unlimitedJumpUnlocked;
+    public bool IsCrouching => crouching;
+    public bool IsOnLadder => onLadder;
 
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        standingSprite = spriteRenderer != null ? spriteRenderer.sprite : null;
+        if (spriteRenderer != null)
+        {
+            standingColor = spriteRenderer.color;
+        }
+        standingColliderSize = bodyCollider.size;
+        standingColliderOffset = bodyCollider.offset;
+        standingGravityScale = body.gravityScale;
         maxJumps = Mathf.Max(1, maxJumps);
         jumpsRemaining = maxJumps;
 
@@ -58,11 +89,13 @@ public sealed class PrototypePlayerController : MonoBehaviour
             spawnPointObject.transform.localPosition = projectileSpawnOffset;
             projectileSpawnPoint = spawnPointObject.transform;
         }
+
+        standingProjectileSpawnPosition = projectileSpawnPoint.localPosition;
     }
 
     private void Update()
     {
-        if (WasJumpPressed() && CanJump())
+        if (!onLadder && !crouching && WasJumpPressed() && CanJump())
         {
             body.linearVelocity = new Vector2(body.linearVelocity.x, jumpSpeed);
             if (!unlimitedJumpUnlocked)
@@ -83,14 +116,46 @@ public sealed class PrototypePlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        bool shouldCrouch = !onLadder && ReadCrouchHeld();
+        SetCrouching(shouldCrouch);
+
+        if (crouching && !onLadder)
+        {
+            TryDropThroughPlatform();
+        }
+
+        if (onLadder)
+        {
+            body.gravityScale = 0f;
+            body.linearVelocity = new Vector2(0f, ReadLadderVerticalInput() * ladderClimbSpeed);
+            return;
+        }
+
+        body.gravityScale = standingGravityScale;
         float horizontalInput = ReadHorizontalInput();
+        if (crouching)
+        {
+            horizontalInput = 0f;
+        }
+
         float targetSpeed = horizontalInput * moveSpeed;
+        if (movingPlatform != null && grounded)
+        {
+            targetSpeed += movingPlatform.CurrentVelocity.x;
+        }
+
         float newSpeed = Mathf.MoveTowards(
             body.linearVelocity.x,
             targetSpeed,
             acceleration * Time.fixedDeltaTime);
 
-        body.linearVelocity = new Vector2(newSpeed, body.linearVelocity.y);
+        float verticalSpeed = body.linearVelocity.y;
+        if (movingPlatform != null && grounded)
+        {
+            verticalSpeed = movingPlatform.CurrentVelocity.y;
+        }
+
+        body.linearVelocity = new Vector2(newSpeed, verticalSpeed);
 
         if (horizontalInput != 0f)
         {
@@ -129,6 +194,11 @@ public sealed class PrototypePlayerController : MonoBehaviour
 
     private bool CanJump()
     {
+        if (crouching || onLadder)
+        {
+            return false;
+        }
+
         if (unlimitedJumpUnlocked)
         {
             return true;
@@ -210,6 +280,39 @@ public sealed class PrototypePlayerController : MonoBehaviour
         return input;
     }
 
+    private bool ReadCrouchHeld()
+    {
+        if (Keyboard.current == null)
+        {
+            return false;
+        }
+
+        return Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed;
+    }
+
+    private float ReadLadderVerticalInput()
+    {
+        if (Keyboard.current == null)
+        {
+            return 0f;
+        }
+
+        float input = 0f;
+        if (Keyboard.current.wKey.isPressed
+            || Keyboard.current.upArrowKey.isPressed
+            || Keyboard.current.spaceKey.isPressed)
+        {
+            input += 1f;
+        }
+
+        if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed)
+        {
+            input -= 1f;
+        }
+
+        return input;
+    }
+
     private bool WasJumpPressed()
     {
         if (Keyboard.current == null)
@@ -239,6 +342,32 @@ public sealed class PrototypePlayerController : MonoBehaviour
         Vector3 localOffset = projectileSpawnPoint.localPosition;
         localOffset.x = Mathf.Abs(localOffset.x) * facingDirection;
         Vector3 spawnPosition = transform.TransformPoint(localOffset);
+        GameObject projectileObject = projectilePrefab != null
+            ? Instantiate(projectilePrefab, spawnPosition, Quaternion.identity)
+            : CreateFallbackProjectile(spawnPosition);
+
+        Rigidbody2D projectileBody = projectileObject.GetComponent<Rigidbody2D>();
+        if (projectileBody == null)
+        {
+            projectileBody = projectileObject.AddComponent<Rigidbody2D>();
+        }
+
+        projectileBody.gravityScale = 0f;
+        projectileBody.bodyType = RigidbodyType2D.Dynamic;
+        projectileBody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        projectileBody.linearVelocity = new Vector2(projectileSpeed * facingDirection, 0f);
+
+        PrototypeProjectile projectile = projectileObject.GetComponent<PrototypeProjectile>();
+        if (projectile == null)
+        {
+            projectile = projectileObject.AddComponent<PrototypeProjectile>();
+        }
+
+        projectile.SetOwner(gameObject);
+    }
+
+    private GameObject CreateFallbackProjectile(Vector3 spawnPosition)
+    {
         GameObject projectileObject = new("PlayerProjectile");
         projectileObject.transform.position = spawnPosition;
 
@@ -249,15 +378,7 @@ public sealed class PrototypePlayerController : MonoBehaviour
 
         BoxCollider2D collider = projectileObject.AddComponent<BoxCollider2D>();
         collider.isTrigger = true;
-
-        Rigidbody2D projectileBody = projectileObject.AddComponent<Rigidbody2D>();
-        projectileBody.gravityScale = 0f;
-        projectileBody.bodyType = RigidbodyType2D.Dynamic;
-        projectileBody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        projectileBody.linearVelocity = new Vector2(projectileSpeed * facingDirection, 0f);
-
-        PrototypeProjectile projectile = projectileObject.AddComponent<PrototypeProjectile>();
-        projectile.SetOwner(gameObject);
+        return projectileObject;
     }
 
     private bool IsGroundContact(Collision2D collision)
@@ -284,6 +405,12 @@ public sealed class PrototypePlayerController : MonoBehaviour
         {
             groundContacts.Add(collision.collider);
         }
+
+        PrototypeMovingPlatform platform = collision.gameObject.GetComponent<PrototypeMovingPlatform>();
+        if (platform != null)
+        {
+            movingPlatform = platform;
+        }
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -293,11 +420,96 @@ public sealed class PrototypePlayerController : MonoBehaviour
         {
             groundContacts.Add(collision.collider);
         }
+
+        PrototypeMovingPlatform platform = collision.gameObject.GetComponent<PrototypeMovingPlatform>();
+        if (platform != null && IsGroundContact(collision))
+        {
+            movingPlatform = platform;
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         groundContacts.Remove(collision.collider);
+
+        if (movingPlatform != null && collision.gameObject == movingPlatform.gameObject)
+        {
+            movingPlatform = null;
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        PrototypeLadder ladder = other.GetComponentInParent<PrototypeLadder>();
+        if (ladder != null)
+        {
+            activeLadder = ladder;
+            onLadder = true;
+            groundContacts.Clear();
+            grounded = false;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        PrototypeLadder ladder = other.GetComponentInParent<PrototypeLadder>();
+        if (ladder != null && ladder == activeLadder)
+        {
+            activeLadder = null;
+            onLadder = false;
+            body.gravityScale = standingGravityScale;
+        }
+    }
+
+    private void SetCrouching(bool value)
+    {
+        if (crouching == value)
+        {
+            return;
+        }
+
+        crouching = value;
+        if (spriteRenderer != null && crouchingSprite != null)
+        {
+            spriteRenderer.sprite = crouching ? crouchingSprite : standingSprite;
+        }
+        else if (spriteRenderer != null)
+        {
+            spriteRenderer.color = crouching ? crouchingFallbackColor : standingColor;
+        }
+
+        bodyCollider.size = crouching ? crouchingColliderSize : standingColliderSize;
+        bodyCollider.offset = crouching ? crouchingColliderOffset : standingColliderOffset;
+        projectileSpawnPoint.localPosition = crouching
+            ? new Vector3(crouchingProjectileSpawnOffset.x * facingDirection, crouchingProjectileSpawnOffset.y, 0f)
+            : new Vector3(standingProjectileSpawnPosition.x * facingDirection, standingProjectileSpawnPosition.y, standingProjectileSpawnPosition.z);
+    }
+
+    private void TryDropThroughPlatform()
+    {
+        if (!grounded)
+        {
+            return;
+        }
+
+        Bounds bounds = bodyCollider.bounds;
+        Collider2D[] candidates = Physics2D.OverlapBoxAll(
+            new Vector2(bounds.center.x, bounds.min.y + 0.05f),
+            new Vector2(bounds.size.x * 0.9f, 0.2f),
+            0f,
+            groundLayer);
+
+        foreach (Collider2D candidate in candidates)
+        {
+            PrototypeDropThroughPlatform platform = candidate.GetComponentInParent<PrototypeDropThroughPlatform>();
+            if (platform != null && platform.TryDropThrough(bodyCollider))
+            {
+                groundContacts.Clear();
+                grounded = false;
+                body.linearVelocity = new Vector2(body.linearVelocity.x, -2f);
+                return;
+            }
+        }
     }
 
     private void OnDrawGizmosSelected()

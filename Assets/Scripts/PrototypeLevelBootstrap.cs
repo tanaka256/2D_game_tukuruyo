@@ -9,7 +9,8 @@ public sealed class PrototypeLevelBootstrap : MonoBehaviour
 {
     private static Sprite squareSprite;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    // Deliberately not auto-run. Build this temporary room explicitly when needed;
+    // otherwise it would appear in every authored scene that is opened.
     private static void CreatePrototype()
     {
         if (FindFirstObjectByType<PrototypeLevelBootstrap>() != null)
@@ -99,36 +100,5 @@ public sealed class PrototypeLevelBootstrap : MonoBehaviour
         }
 
         return squareSprite;
-    }
-}
-
-public sealed class PrototypeCameraFollow : MonoBehaviour
-{
-    [SerializeField] private float followSpeed = 6f;
-    [SerializeField] private float horizontalOffset = 0f;
-    [SerializeField] private float verticalPosition = 1.25f;
-
-    private Camera targetCamera;
-
-    private void Start()
-    {
-        targetCamera = Camera.main;
-    }
-
-    private void LateUpdate()
-    {
-        if (targetCamera == null)
-        {
-            return;
-        }
-
-        Vector3 targetPosition = new(
-            transform.position.x + horizontalOffset,
-            verticalPosition,
-            targetCamera.transform.position.z);
-        targetCamera.transform.position = Vector3.Lerp(
-            targetCamera.transform.position,
-            targetPosition,
-            followSpeed * Time.deltaTime);
     }
 }
