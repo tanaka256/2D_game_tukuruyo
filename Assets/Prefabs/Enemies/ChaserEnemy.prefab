@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 1306622795315353929}
   - component: {fileID: 1848527879508791945}
   - component: {fileID: 9030638530195415639}
+  - component: {fileID: 2219806476356057585}
+  - component: {fileID: 8826295714793790938}
   m_Layer: 0
   m_Name: ChaserEnemy
   m_TagString: Untagged
@@ -184,6 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeHealth
   maxHealth: 4
   faction: 1
+  playerInvincibilityDuration: 1
 --- !u!114 &1848527879508791945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +222,127 @@ MonoBehaviour:
   moveSpeed: 2.5
   acceleration: 20
   stopDistance: 0.1
+--- !u!82 &2219806476356057585
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7664128465832176683}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &8826295714793790938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7664128465832176683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f941d048f804e2a8ee61110f375940a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrototypeAudioEvents
+  playerShot: {fileID: 8300000, guid: 0a046cdae71f44d448aadf31f07d0f66, type: 3}
+  chargeStart: {fileID: 8300000, guid: 7bf976d655c3984449956d6d59055b29, type: 3}
+  chargedShot: {fileID: 8300000, guid: 409379ea07e659a4e8bdff8ddc79d396, type: 3}
+  missileShot: {fileID: 8300000, guid: fcffd47262427cd45a03bc1f1fac5568, type: 3}
+  playerHit: {fileID: 8300000, guid: 3d35a75045f671842a2086566ae52abf, type: 3}
+  playerJump: {fileID: 8300000, guid: 346fecb2188c020499f5f5764dd89159, type: 3}
+  playerLand: {fileID: 8300000, guid: f95c6b5e9ccca9049a4c66c99a0b7bd5, type: 3}
+  enemyShot: {fileID: 8300000, guid: 07cbb3f0b129dcb48b72a708aa09cf5b, type: 3}
+  enemyHit: {fileID: 8300000, guid: 217baf573c97b9148adc44b9dcf1de26, type: 3}
+  enemyDeath: {fileID: 8300000, guid: 8c469796ca147644ca2c9d2f1442f18c, type: 3}
+  guardBlock: {fileID: 8300000, guid: ecf6a6f6e03886f4bac1d2d6fedf457b, type: 3}
+  effectsVolume: 0.8
 --- !u!1 &8136393222478177275
 GameObject:
   m_ObjectHideFlags: 0

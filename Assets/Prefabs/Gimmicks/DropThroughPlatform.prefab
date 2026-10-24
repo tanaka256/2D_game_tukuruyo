@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4270099457910604758}
   - component: {fileID: 4791766983294636460}
   - component: {fileID: 6761261035541212233}
+  - component: {fileID: 1507475894074906603}
   m_Layer: 0
   m_Name: DropThroughPlatform
   m_TagString: Untagged
@@ -172,3 +173,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeDropThroughPlatform
   ignoreCollisionDuration: 0.35
+  passThroughFromBelow: 1
+  allowPlayerDropThrough: 1
+  surfaceArc: 180
+--- !u!114 &1507475894074906603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3739836813021920497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1e1ad0fb3d4bf7aa9a44f0b3e1d5c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrototypeSidePassThrough
+  allowSidePassThrough: 1
+  ignoreCollisionDuration: 0.25

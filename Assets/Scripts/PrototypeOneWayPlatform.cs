@@ -6,6 +6,10 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D), typeof(PlatformEffector2D))]
 public sealed class PrototypeOneWayPlatform : MonoBehaviour
 {
+    [SerializeField] private bool passThroughFromBelow = true;
+    [Range(0f, 360f)]
+    [SerializeField] private float surfaceArc = 180f;
+
     private void Reset()
     {
         Configure();
@@ -14,6 +18,7 @@ public sealed class PrototypeOneWayPlatform : MonoBehaviour
     private void Awake()
     {
         Configure();
+        EnsureSidePassThrough();
     }
 
     private void Configure()
@@ -22,7 +27,15 @@ public sealed class PrototypeOneWayPlatform : MonoBehaviour
         collider.usedByEffector = true;
 
         PlatformEffector2D effector = GetComponent<PlatformEffector2D>();
-        effector.useOneWay = true;
-        effector.surfaceArc = 180f;
+        effector.useOneWay = passThroughFromBelow;
+        effector.surfaceArc = surfaceArc;
+    }
+
+    private void EnsureSidePassThrough()
+    {
+        if (GetComponent<PrototypeSidePassThrough>() == null)
+        {
+            gameObject.AddComponent<PrototypeSidePassThrough>();
+        }
     }
 }

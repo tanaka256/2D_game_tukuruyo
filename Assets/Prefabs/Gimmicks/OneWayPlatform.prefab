@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5676917276194559452}
   - component: {fileID: 7706180974602707304}
   - component: {fileID: 7162161069834982926}
+  - component: {fileID: 5394971444737492947}
   m_Layer: 0
   m_Name: OneWayPlatform
   m_TagString: Untagged
@@ -171,3 +172,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a5c8e3f7b2d4690a4e6c1f9d8b30752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeOneWayPlatform
+  passThroughFromBelow: 1
+  surfaceArc: 180
+--- !u!114 &5394971444737492947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2548807974772174082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1e1ad0fb3d4bf7aa9a44f0b3e1d5c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrototypeSidePassThrough
+  allowSidePassThrough: 1
+  ignoreCollisionDuration: 0.25

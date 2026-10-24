@@ -33,6 +33,11 @@ public sealed class PrototypeProjectile : MonoBehaviour
         owner = projectileOwner;
     }
 
+    public void SetDamage(int value)
+    {
+        damage = Mathf.Max(1, value);
+    }
+
     private void Start()
     {
         Destroy(gameObject, lifetime);
@@ -48,7 +53,16 @@ public sealed class PrototypeProjectile : MonoBehaviour
         PrototypeHealth target = other.GetComponentInParent<PrototypeHealth>();
         if (target != null && target.Faction != faction)
         {
-            target.TakeDamage(damage, owner != null ? owner : gameObject);
+            GameObject source = owner != null ? owner : gameObject;
+            PrototypeFrontDefense defense = target.GetComponent<PrototypeFrontDefense>();
+            if (defense != null && defense.BlocksAttackFrom(source))
+            {
+                target.GetComponent<PrototypeAudioEvents>()?.PlayGuardBlock();
+            }
+            else
+            {
+                target.TakeDamage(damage, source);
+            }
         }
 
         Destroy(gameObject);

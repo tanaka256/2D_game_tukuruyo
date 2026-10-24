@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1775106725950784943}
   - component: {fileID: 7726400838103295473}
   - component: {fileID: 5248211509978503495}
+  - component: {fileID: 3788785332268472414}
   m_Layer: 0
   m_Name: Platform
   m_TagString: Untagged
@@ -138,3 +139,17 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &3788785332268472414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2758564817044780178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1e1ad0fb3d4bf7aa9a44f0b3e1d5c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrototypeSidePassThrough
+  allowSidePassThrough: 1
+  ignoreCollisionDuration: 0.25

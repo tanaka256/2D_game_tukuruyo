@@ -10,7 +10,7 @@ public enum PrototypeMovingPlatformAxis
 /// Moves a kinematic platform between its start position and a configurable endpoint.
 /// Rigidbody2D movement carries standing characters with the platform.
 /// </summary>
-[RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D), typeof(PlatformEffector2D))]
 public sealed class PrototypeMovingPlatform : MonoBehaviour
 {
     [SerializeField] private PrototypeMovingPlatformAxis axis = PrototypeMovingPlatformAxis.Horizontal;
@@ -20,6 +20,9 @@ public sealed class PrototypeMovingPlatform : MonoBehaviour
     [SerializeField] private float travelDistance = 3f;
     [Min(0f)]
     [SerializeField] private float waitAtEnds;
+    [SerializeField] private bool passThroughFromBelow;
+    [Range(0f, 360f)]
+    [SerializeField] private float surfaceArc = 180f;
 
     private Rigidbody2D body;
     private Vector2 startPosition;
@@ -34,6 +37,19 @@ public sealed class PrototypeMovingPlatform : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         body.bodyType = RigidbodyType2D.Kinematic;
         body.useFullKinematicContacts = true;
+        BoxCollider2D collider = GetComponent<BoxCollider2D>();
+        collider.usedByEffector = true;
+        PlatformEffector2D effector = GetComponent<PlatformEffector2D>();
+        if (effector == null)
+        {
+            effector = gameObject.AddComponent<PlatformEffector2D>();
+        }
+        effector.useOneWay = passThroughFromBelow;
+        effector.surfaceArc = surfaceArc;
+        if (GetComponent<PrototypeSidePassThrough>() == null)
+        {
+            gameObject.AddComponent<PrototypeSidePassThrough>();
+        }
         startPosition = body.position;
         previousPosition = startPosition;
     }

@@ -15,6 +15,8 @@ public sealed class PrototypeEnemyPatrol : MonoBehaviour
     private float startX;
     private int direction;
 
+    public int FacingDirection => direction;
+
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
